@@ -19,12 +19,10 @@ func send(fd int, l ...protocol.Layer) error {
 	layerType := l[0].LayerType()
 	if layerType == protocol.LayerTypeIPv4 {
 		ip := l[0].(*protocol.IPv4Packet)
-		log.Printf("%v", ip)
 		// this addr is used to choose the out interface
-		log.Println(ip.DstIP.To4())
 		tmpip := ip.DstIP.To4()
 		dstip := [4]byte{tmpip[0], tmpip[1], tmpip[2], tmpip[3]}
-		log.Println("dstip = ", dstip)
+		//log.Println("dstip = ", dstip)
 
 		addr := &syscall.SockaddrInet4 {
 			Port: 0,
@@ -35,7 +33,7 @@ func send(fd int, l ...protocol.Layer) error {
 			if err == errors.New("Bad file descriptor") {
 				log.Fatal("You may need to execute setcap cap_net_raw+ep `which cjr`")
 			} else {
-				log.Fatal("Sendto: ", err)
+				log.Fatal("Sendto: ", err, " ", addr)
 			}
 		}
 	} /*else if layerType == protocol.LayerTypeIPv6 {

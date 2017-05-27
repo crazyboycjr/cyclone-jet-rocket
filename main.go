@@ -4,6 +4,7 @@ import (
 	_"fmt"
 	_"flag"
 	"os"
+	"runtime"
 
 	flags "github.com/jessevdk/go-flags"
 	modules "cjr/module"
@@ -21,26 +22,9 @@ var opts struct {
 	Help bool `short:"h" long:"help" description:"print this help"`
 }
 
-/*
-var (
-	module *string = flag.String("module", "", "specify a module to use")
-	listModule *bool = flag.Bool("list-module", false, "list available modules")
-	help *bool = flag.Bool("help", false, "print this help")
-)
-*/
-
-//var cmd *flag.FlagSet = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 var cmd *flags.Parser = flags.NewParser(&opts, flags.PassAfterNonOption | flags.PrintErrors | flags.IgnoreUnknown)
 
 func init() {
-	/*
-	cmd.StringVar(&module, "module", "", "specify a `module` to use")
-	cmd.StringVar(&module, "m", "", "specify a `module` to use")
-	cmd.BoolVar(&listModule, "list-module", false, "list available modules")
-	cmd.BoolVar(&listModule, "lm", false, "list available modules")
-	cmd.BoolVar(&help, "help", false, "print this help")
-	cmd.BoolVar(&help, "h", false, "print this help")
-	*/
 }
 
 var Usage = func() {
@@ -48,6 +32,7 @@ var Usage = func() {
 }
 
 func main() {
+	runtime.GOMAXPROCS(1)
 
 	args, err := cmd.ParseArgs(os.Args[1:])
 

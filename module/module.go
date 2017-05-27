@@ -3,6 +3,8 @@ package module
 import (
 	"fmt"
 	"log"
+	"time"
+	"math/rand"
 )
 
 type moduleMeta struct {
@@ -27,11 +29,17 @@ func LoadModule(name string, flags []string) {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	moduleMap = map[string] moduleMeta {
 		"ping-flood": moduleMeta {
 			name: "ping-flood",
 			desc: `A ping flood is a simple DoS attack where attacker overwhelms the victim with ICMP "echo request"(ping) packets`,
 			entry: pingFloodEntry,
+		},
+		"smurf": moduleMeta {
+			name: "smurf",
+			desc: `Braodcast victim's spoofed source IP address`,
+			entry: smurfEntry,
 		},
 	}
 }
