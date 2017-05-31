@@ -1,8 +1,8 @@
 package module
 
 import (
-	"fmt"
 	"log"
+	"fmt"
 	"time"
 	"math/rand"
 )
@@ -40,6 +40,11 @@ func init() {
 			name: "smurf",
 			desc: `Braodcast victim's spoofed source IP address`,
 			entry: smurfEntry,
+		},
+		"udp-flood": moduleMeta {
+			name: "udp-flood",
+			desc: `A UDP flood attack is a DoS attack using User Datagram Protocol`,
+			entry: udpFloodEntry,
 		},
 	}
 }
