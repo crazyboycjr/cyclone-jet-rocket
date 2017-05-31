@@ -6,6 +6,7 @@ const (
 	LayerTypeIPv4			LayerType = 1
 	LayerTypeICMPv4			LayerType = 2
 	LayerTypeUDP			LayerType = 3
+	LayerTypeTCP			LayerType = 4
 	LayerTypeUnknownApp		LayerType = 999
 )
 
