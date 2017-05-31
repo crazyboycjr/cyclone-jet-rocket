@@ -40,12 +40,12 @@ func (u *UDP) ToBytes(data *[]byte) error {
 	u.PseudoHeader[8] = 0
 	u.PseudoHeader[9] = byte(IPP_UDP)
 	binary.BigEndian.PutUint16(u.PseudoHeader[10:12], u.Length)
-	u.Checksum = udpChecksum(u.PseudoHeader, *data)
+	u.Checksum = tcpudpChecksum(u.PseudoHeader, *data)
 	PutUint16((*data)[6:8], u.Checksum)
 	return nil
 }
 
-func udpChecksum(pseudoHeader, data []byte) uint16 {
+func tcpudpChecksum(pseudoHeader, data []byte) uint16 {
 	data = append(pseudoHeader, data...)
 	return tcpipChecksum(data)
 }

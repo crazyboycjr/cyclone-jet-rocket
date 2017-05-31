@@ -46,5 +46,10 @@ func init() {
 			desc: `A UDP flood attack is a DoS attack using User Datagram Protocol`,
 			entry: udpFloodEntry,
 		},
+		"syn-flood": moduleMeta {
+			name: "syn-flood",
+			desc: `A SYN flood is a form of DoS attack in which sending a succession of SYN requests to a target's system to consume server resources`,
+			entry: synFloodEntry,
+		},
 	}
 }

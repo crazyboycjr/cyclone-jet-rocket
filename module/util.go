@@ -159,7 +159,7 @@ func packetSend(constructPacket func(CommonOption) []protocol.Layer, opts Common
 	}
 
 	var throttle <-chan time.Time
-	if opts.Rate() == time.Duration(0) {
+	if opts.Rate() != time.Duration(0) {
 		throttle = time.Tick(opts.Rate())
 	}
 	count := opts.Count()

