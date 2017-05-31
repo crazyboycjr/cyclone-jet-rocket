@@ -14,12 +14,6 @@ type ICMPv4 struct {
 	Data			[]byte
 }
 
-/*
-func (p *ICMPv4) FromBytes(data []byte) error {
-	return nil
-}
-*/
-
 func (p *ICMPv4) LayerType() LayerType {
 	return LayerTypeICMPv4
 }
