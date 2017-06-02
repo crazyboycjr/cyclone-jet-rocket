@@ -100,6 +100,14 @@ func parseRateOrDie(rate string) time.Duration {
 	return wait
 }
 
+func newTCPSocketOrDie() int {
+	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, syscall.IPPROTO_TCP)
+	if err != nil {
+		log.Fatal("Socket: ", err)
+	}
+	return fd
+}
+
 func newRawSocketOrDie() int {
 	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_RAW, syscall.IPPROTO_RAW)
 	if err != nil {

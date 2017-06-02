@@ -51,5 +51,10 @@ func init() {
 			desc: `A SYN flood is a form of DoS attack in which sending a succession of SYN requests to a target's system to consume server resources`,
 			entry: synFloodEntry,
 		},
+		"slowloris": moduleMeta {
+			name: "slowloris",
+			desc: `aka slow HTTP attack`,
+			entry: slowlorisEntry,
+		},
 	}
 }
