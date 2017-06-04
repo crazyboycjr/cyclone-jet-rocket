@@ -26,9 +26,10 @@ func (s SynFloodOpt) IsBroadcast() bool {
 	return false
 }
 
-func synFloodEntry(remainFlags []string) {
+func synFloodEntry(stopChan chan int, remainFlags []string) {
 	var opts SynFloodOpt
 
+	opts.ports = []uint16{}
 	opts.PortFunc = func(portStr string) {
 		var st, en uint16
 		sepCount := strings.Count(portStr, ":")
@@ -97,7 +98,7 @@ func synFloodEntry(remainFlags []string) {
 		log.Fatal("no destination IP specified")
 	}
 
-	packetSend(synFloodBuild, &opts)
+	packetSend(stopChan, synFloodBuild, &opts)
 }
 
 func synFloodBuild(opts_ CommonOption) []protocol.Layer {

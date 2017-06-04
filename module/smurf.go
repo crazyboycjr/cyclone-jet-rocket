@@ -23,7 +23,7 @@ func (s *SmurfOpt) IsBroadcast() bool {
 	return true
 }
 
-func smurfEntry(remainFlags []string) {
+func smurfEntry(stopChan chan int, remainFlags []string) {
 	var opts SmurfOpt
 
 	opts.RateFunc = func(rate string) {
@@ -53,7 +53,7 @@ func smurfEntry(remainFlags []string) {
 		}
 	}
 
-	packetSend(smurfBuild, &opts)
+	packetSend(stopChan, smurfBuild, &opts)
 }
 
 func smurfBuild(opts_ CommonOption) []protocol.Layer {

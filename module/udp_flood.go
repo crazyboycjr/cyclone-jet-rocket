@@ -29,9 +29,10 @@ func (u *UDPFloodOpt) IsBroadcast() bool {
 	return false
 }
 
-func udpFloodEntry(remainFlags []string) {
+func udpFloodEntry(stopChan chan int, remainFlags []string) {
 	var opts UDPFloodOpt
 
+	opts.ports = []uint16{}
 	opts.PortFunc = func(portStr string) {
 		var st, en uint16
 		sepCount := strings.Count(portStr, ":")
@@ -100,11 +101,11 @@ func udpFloodEntry(remainFlags []string) {
 		log.Fatal("no destination IP specified")
 	}
 
-	udpFloodStart(&opts)
+	udpFloodStart(stopChan, &opts)
 }
 
-func udpFloodStart(opts *UDPFloodOpt) {
-	packetSend(udpFloodBuild, opts)
+func udpFloodStart(stopChan chan int, opts *UDPFloodOpt) {
+	packetSend(stopChan, udpFloodBuild, opts)
 }
 
 var curPort int = 0

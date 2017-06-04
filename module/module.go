@@ -10,7 +10,7 @@ import (
 type moduleMeta struct {
 	name string
 	desc string
-	entry func([]string)
+	entry func(chan int, []string)
 }
 var moduleMap map[string] moduleMeta
 
@@ -20,12 +20,12 @@ func ListModule() {
 	}
 }
 
-func LoadModule(name string, flags []string) {
+func LoadModule(stopChan chan int, name string, flags []string) {
 	m, ok := moduleMap[name]
 	if !ok {
 		log.Fatalf("module %s do not exists\n", name)
 	}
-	m.entry(flags)
+	m.entry(stopChan, flags)
 }
 
 func init() {
