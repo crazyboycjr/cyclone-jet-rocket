@@ -83,7 +83,7 @@ func (p *IPv4Packet) ToBytes(data *[]byte) error {
 	*data = append(header, *data...)
 	p.BaseLayer = BaseLayer{Header: (*data)[:len(header)], Payload: (*data)[len(header):]}
 
-	p.Checksum = checksum(*data)
+	p.Checksum = checksum(header)
 	binary.BigEndian.PutUint16((*data)[10:12], p.Checksum)
 	return nil
 }

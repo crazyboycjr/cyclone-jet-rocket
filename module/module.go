@@ -1,7 +1,7 @@
 package module
 
 import (
-	"log"
+	_"log"
 	"fmt"
 	"time"
 	"math/rand"
@@ -10,7 +10,7 @@ import (
 type moduleMeta struct {
 	name string
 	desc string
-	entry func([]string)
+	entry func(chan int, []string) error
 }
 var moduleMap map[string] moduleMeta
 
@@ -20,12 +20,12 @@ func ListModule() {
 	}
 }
 
-func LoadModule(name string, flags []string) {
+func LoadModule(stopChan chan int, name string, flags []string) error {
 	m, ok := moduleMap[name]
 	if !ok {
-		log.Fatalf("module %s do not exists\n", name)
+		return fmt.Errorf("module %s do not exists", name)
 	}
-	m.entry(flags)
+	return m.entry(stopChan, flags)
 }
 
 func init() {
@@ -55,6 +55,11 @@ func init() {
 			name: "slowloris",
 			desc: `aka slow HTTP attack`,
 			entry: slowlorisEntry,
+		},
+		"rdns": moduleMeta {
+			name: "rdns",
+			desc: `DNS amplification is a type of reflection attack`,
+			entry: rdnsEntry,
 		},
 	}
 }

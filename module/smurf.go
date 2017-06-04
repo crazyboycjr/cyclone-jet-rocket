@@ -2,7 +2,7 @@ package module
 
 import (
 	"os"
-	"log"
+	_"log"
 	_"time"
 	"math/rand"
 
@@ -23,24 +23,35 @@ func (s *SmurfOpt) IsBroadcast() bool {
 	return true
 }
 
-func smurfEntry(remainFlags []string) {
+func smurfEntry(stopChan chan int, remainFlags []string) error {
 	var opts SmurfOpt
 
+	var err2 error
 	opts.RateFunc = func(rate string) {
-		commonRateFunc(&opts, rate)
+		e := commonRateFunc(&opts, rate)
+		if e != nil {
+			err2 = e
+		}
 	}
 	opts.BroadcastFunc = func(dest string) {
-		commonDestFunc(&opts, dest)
+		e := commonDestFunc(&opts, dest)
+		if e != nil {
+			err2 = e
+		}
 	}
 	opts.CountFunc = func(count int) {
-		commonCountFunc(&opts, count)
+		e := commonCountFunc(&opts, count)
+		if e != nil {
+			err2 = e
+		}
 	}
 
 	cmd := flags.NewParser(&opts, flags.HelpFlag | flags.PrintErrors)
 
 	_, err := cmd.ParseArgs(remainFlags)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return err
 	}
 
 	if len(remainFlags) == 0 {
@@ -49,11 +60,15 @@ func smurfEntry(remainFlags []string) {
 	for _, flag := range remainFlags {
 		if flag == "help" {
 			cmd.WriteHelp(os.Stderr)
-			return
+			return nil
 		}
 	}
 
-	packetSend(smurfBuild, &opts)
+	if err2 != nil {
+		return err2
+	}
+
+	return packetSend(stopChan, smurfBuild, &opts)
 }
 
 func smurfBuild(opts_ CommonOption) []protocol.Layer {

@@ -1,9 +1,10 @@
 package module
 
 import (
-	"log"
+	_"log"
 	"net"
 	"time"
+	"errors"
 )
 
 type CommonOption interface {
@@ -16,29 +17,38 @@ type CommonOption interface {
 	IsBroadcast() bool
 }
 
-func commonRateFunc(opts CommonOption, rate string) {
+func commonRateFunc(opts CommonOption, rate string) error {
 	var wait time.Duration
 	if rate == "nolimit" {
 		wait = time.Duration(0)
 	} else {
-		wait = parseRateOrDie(rate)
+		//wait = parseRateOrDie(rate)
+		var err error
+		wait, err = parseRate(rate)
+		if err != nil {
+			return err
+		}
 	}
 	opts.SetRate(wait)
+	return nil
 }
 
-func commonDestFunc(opts CommonOption, dest string) {
+func commonDestFunc(opts CommonOption, dest string) error {
 	opts.SetDest(net.ParseIP(dest))
 	if opts.Dest() == nil {
-		log.Fatal("parse destination IP error")
+		//log.Fatal("parse destination IP error")
+		return errors.New("parse destination IP error")
 	}
+	return nil
 }
 
-func commonCountFunc(opts CommonOption, count int) {
+func commonCountFunc(opts CommonOption, count int) error {
 	if count <= 0 {
 		opts.SetCount(^uint(0) >> 1)
 	} else {
 		opts.SetCount(uint(count))
 	}
+	return nil
 }
 
 type BaseOption struct {
