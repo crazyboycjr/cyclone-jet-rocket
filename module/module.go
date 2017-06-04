@@ -56,5 +56,10 @@ func init() {
 			desc: `aka slow HTTP attack`,
 			entry: slowlorisEntry,
 		},
+		"rdns": moduleMeta {
+			name: "rdns",
+			desc: `DNS amplification is a type of reflection attack`,
+			entry: rdnsEntry,
+		},
 	}
 }
