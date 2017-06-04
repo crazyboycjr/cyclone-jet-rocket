@@ -66,5 +66,10 @@ func init() {
 			desc: `LAND (Local Area Network Denial) attack use the destination ip addresss and port as the source address and port`,
 			entry: landEntry,
 		},
+		"http-flood": moduleMeta {
+			name: "http-flood",
+			desc: `HTTP request flood`,
+			entry: httpFloodEntry,
+		},
 	}
 }
