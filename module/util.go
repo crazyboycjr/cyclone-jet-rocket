@@ -157,7 +157,7 @@ func randomIPv4() net.IP {
 	return net.IPv4(byte(a), byte(b), byte(c), byte(d))
 }
 
-func packetSend(constructPacket func(CommonOption) []protocol.Layer, opts CommonOption) {
+func packetSend(stopChan chan int, constructPacket func(CommonOption) []protocol.Layer, opts CommonOption) {
 	var fd int = -1
 	var err error
 	fd = newRawSocketOrDie()
@@ -166,6 +166,9 @@ func packetSend(constructPacket func(CommonOption) []protocol.Layer, opts Common
 		setBroadcastOrDie(fd)
 	}
 
+	second := time.Tick(time.Second)
+	var curCount uint = 0
+
 	var throttle <-chan time.Time
 	if opts.Rate() != time.Duration(0) {
 		throttle = time.Tick(opts.Rate())
@@ -173,11 +176,16 @@ func packetSend(constructPacket func(CommonOption) []protocol.Layer, opts Common
 	count := opts.Count()
 
 	for {
-		if count == 0 {
+		if curCount >= count {
 			break
 		}
-		if count % 1000 == 0 {
-			log.Println("1000 pkts sent")
+		select {
+			case <-second:
+				log.Printf("%d pkts sent\n", curCount)
+			case <-stopChan:
+				return
+			default:
+				break
 		}
 		if throttle != nil {
 			<-throttle
@@ -190,6 +198,6 @@ func packetSend(constructPacket func(CommonOption) []protocol.Layer, opts Common
 			// or bubble the error?
 			log.Fatal("packet send:", err)
 		}
-		count--
+		curCount++
 	}
 }

@@ -23,7 +23,7 @@ func (p *PingFloodOpt) IsBroadcast() bool {
 	return false
 }
 
-func pingFloodEntry(remainFlags []string) {
+func pingFloodEntry(stopChan chan int, remainFlags []string) {
 	var opts PingFloodOpt
 
 	opts.RateFunc = func(rate string) {
@@ -54,26 +54,11 @@ func pingFloodEntry(remainFlags []string) {
 		}
 	}
 
-	pingFloodStart(&opts)
+	pingFloodStart(stopChan, &opts)
 }
 
-func pingFloodStart(opts *PingFloodOpt) {
-	/*
-	chs := make([]chan int, runtime.NumCPU())
-	cnt := count / uint(runtime.NumCPU())
-	for i := 0; i < runtime.NumCPU(); i++ {
-		chs[i] = make(chan int)
-		go pingFloodSend(chs[i], spoof, dest, cnt, ttl)
-		count -= cnt
-		if count < cnt * 2 {
-			cnt = count
-		}
-	}
-	for i := 0; i < runtime.NumCPU(); i++ {
-		<-chs[i]
-	}
-	*/
-	packetSend(pingFloodBuild, opts)
+func pingFloodStart(stopChan chan int, opts *PingFloodOpt) {
+	packetSend(stopChan, pingFloodBuild, opts)
 }
 
 func pingFloodBuild(opts_ CommonOption) []protocol.Layer {

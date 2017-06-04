@@ -62,7 +62,7 @@ func main() {
 	}
 
 	if len(opts.Module) > 0 {
-		modules.LoadModule(opts.Module, args)
+		modules.LoadModule(nil, opts.Module, args)
 		os.Exit(0)
 	}
 

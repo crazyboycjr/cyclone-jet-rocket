@@ -73,9 +73,11 @@ func botListInfo(ircconn *irc.Connection, receiver string) {
 	}
 }
 
+var stopChan chan int = make(chan int)
+
 func botLoadModule(msg string) {
 	snips := strings.Split(strings.TrimSpace(msg), " ")
-	modules.LoadModule(snips[0], snips[1:])
+	modules.LoadModule(stopChan, snips[0], snips[1:])
 }
 
 // This function is untested XXX
@@ -89,6 +91,10 @@ func botUninstall() {
 		log.Println("remove file fail:", err)
 	}
 	defer os.Exit(0)
+}
+
+func botStop() {
+	stopChan <- 1
 }
 
 func botInit() {
@@ -112,6 +118,7 @@ func botInit() {
 					case "!list":
 						go botListInfo(irccon, channel)
 					case "!stop":
+						go botStop()
 					case "!uninstall":
 						botUninstall()
 				}
