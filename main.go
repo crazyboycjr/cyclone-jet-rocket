@@ -19,7 +19,7 @@ var (
 )
 
 var opts struct {
-	Distribute bool `short:"d" long:"dist" description:"use distributed mode"`
+	Distribute bool `short:"D" long:"dist" description:"use distributed mode"`
 	Module string `short:"m" long:"module" description:"specify a module to use" value-name:"module" default:""`
 	ListModule bool `short:"l" long:"list-module" description:"list available modules"`
 	Help bool `short:"h" long:"help" description:"print this help"`

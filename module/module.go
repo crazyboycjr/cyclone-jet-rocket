@@ -61,5 +61,15 @@ func init() {
 			desc: `DNS amplification is a type of reflection attack`,
 			entry: rdnsEntry,
 		},
+		"land": moduleMeta {
+			name: "land",
+			desc: `LAND (Local Area Network Denial) attack use the destination ip addresss and port as the source address and port`,
+			entry: landEntry,
+		},
+		"http-flood": moduleMeta {
+			name: "http-flood",
+			desc: `HTTP request flood`,
+			entry: httpFloodEntry,
+		},
 	}
 }
