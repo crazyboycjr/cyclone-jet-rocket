@@ -1,6 +1,7 @@
 package module
 
 import (
+	"fmt"
 	"net"
 	"syscall"
 	"log"
@@ -68,6 +69,17 @@ func parsePortOrDie(portStr string) uint16 {
 	return uint16(port)
 }
 
+func parsePort(portStr string) (uint16, error) {
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return 0, fmt.Errorf("Parse dport failed: %s", err.Error())
+	}
+	if port > 0xffff || port <= 0 {
+		return 0, errors.New("invalid port number")
+	}
+	return uint16(port), nil
+}
+
 func parseRateOrDie(rate string) time.Duration {
 	rates := strings.Split(rate, "/")
 	if len(rates) > 2 {
@@ -98,6 +110,38 @@ func parseRateOrDie(rate string) time.Duration {
 			log.Fatal("unrecognized time unit")
 	}
 	return wait
+}
+
+func parseRate(rate string) (time.Duration, error) {
+	rates := strings.Split(rate, "/")
+	if len(rates) > 2 {
+		return time.Duration(0), errors.New("rates parse error")
+	}
+	var unit string
+	if len(rates) == 1 {
+		unit = "s"
+	} else {
+		unit = rates[1]
+	}
+	num, err := strconv.Atoi(rates[0])
+	if err != nil {
+		return time.Duration(0), fmt.Errorf("rates parse error: %s", err.Error())
+	}
+
+	wait := time.Second / time.Duration(num)
+	switch unit {
+		case "ms":
+			wait /= 1000
+		case "s":
+			wait = wait
+		case "min":
+			wait *= 60
+		case "h":
+			wait *= 3600
+		default:
+			return time.Duration(0), errors.New("unrecognized time unit")
+	}
+	return wait, nil
 }
 
 func newTCPSocketOrDie() int {
@@ -132,6 +176,7 @@ func chooseIPv4(spoof string) net.IP {
 			_, ipnet, err := net.ParseCIDR(spoof)
 			if err != nil {
 				log.Fatal(err)
+				//return nil, err
 			}
 			ipmask := binary.BigEndian.Uint32(ipnet.Mask)
 			up := 1
@@ -157,7 +202,7 @@ func randomIPv4() net.IP {
 	return net.IPv4(byte(a), byte(b), byte(c), byte(d))
 }
 
-func packetSend(stopChan chan int, constructPacket func(CommonOption) []protocol.Layer, opts CommonOption) {
+func packetSend(stopChan chan int, constructPacket func(CommonOption) []protocol.Layer, opts CommonOption) error {
 	var fd int = -1
 	var err error
 	fd = newRawSocketOrDie()
@@ -183,7 +228,7 @@ func packetSend(stopChan chan int, constructPacket func(CommonOption) []protocol
 			case <-second:
 				log.Printf("%d pkts sent\n", curCount)
 			case <-stopChan:
-				return
+				return nil
 			default:
 				break
 		}
@@ -196,8 +241,10 @@ func packetSend(stopChan chan int, constructPacket func(CommonOption) []protocol
 		if err != nil {
 			// should I log.Fatal() here?
 			// or bubble the error?
-			log.Fatal("packet send:", err)
+			//log.Fatal("packet send:", err)
+			return fmt.Errorf("packet send: %s", err.Error())
 		}
 		curCount++
 	}
+	return nil
 }
