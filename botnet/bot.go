@@ -4,6 +4,7 @@ import (
 	"os"
 	"net"
 	"log"
+	"time"
 	"strings"
 	"crypto/tls"
 	"math/rand"
@@ -73,11 +74,15 @@ func botListInfo(ircconn *irc.Connection, receiver string) {
 	}
 }
 
-var stopChan chan int = make(chan int)
+// send 10000 + 1 stop command will lock the program
+var stopChan chan int = make(chan int, 10000)
 
 func botLoadModule(msg string) {
 	snips := strings.Split(strings.TrimSpace(msg), " ")
-	modules.LoadModule(stopChan, snips[0], snips[1:])
+	err := modules.LoadModule(stopChan, snips[0], snips[1:])
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // This function is untested XXX
@@ -95,6 +100,13 @@ func botUninstall() {
 
 func botStop() {
 	stopChan <- 1
+	// usr some dirty method in order to ensure no duplicated stop
+	go func() {
+		time.Sleep(time.Second)
+		for len(stopChan) > 0 {
+			<-stopChan
+		}
+	}()
 }
 
 func botInit() {

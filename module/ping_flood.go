@@ -2,7 +2,7 @@ package module
 
 import (
 	"os"
-	"log"
+	_"log"
 	"math/rand"
 	_"encoding/binary"
 
@@ -23,17 +23,27 @@ func (p *PingFloodOpt) IsBroadcast() bool {
 	return false
 }
 
-func pingFloodEntry(stopChan chan int, remainFlags []string) {
+func pingFloodEntry(stopChan chan int, remainFlags []string) error {
 	var opts PingFloodOpt
 
+	var err2 error
 	opts.RateFunc = func(rate string) {
-		commonRateFunc(&opts, rate)
+		e := commonRateFunc(&opts, rate)
+		if e != nil {
+			err2 = e
+		}
 	}
 	opts.DestFunc = func(dest string) {
-		commonDestFunc(&opts, dest)
+		e := commonDestFunc(&opts, dest)
+		if e != nil {
+			err2 = e
+		}
 	}
 	opts.CountFunc = func(count int) {
-		commonCountFunc(&opts, count)
+		e := commonCountFunc(&opts, count)
+		if e != nil {
+			err2 = e
+		}
 	}
 
 	//fmt.Println(remainFlags)
@@ -41,7 +51,8 @@ func pingFloodEntry(stopChan chan int, remainFlags []string) {
 
 	_, err := cmd.ParseArgs(remainFlags)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return err
 	}
 
 	if len(remainFlags) == 0 {
@@ -50,15 +61,18 @@ func pingFloodEntry(stopChan chan int, remainFlags []string) {
 	for _, flag := range remainFlags {
 		if flag == "help" {
 			cmd.WriteHelp(os.Stderr)
-			return
+			return nil
 		}
 	}
 
-	pingFloodStart(stopChan, &opts)
+	if err2 != nil {
+		return err2
+	}
+	return pingFloodStart(stopChan, &opts)
 }
 
-func pingFloodStart(stopChan chan int, opts *PingFloodOpt) {
-	packetSend(stopChan, pingFloodBuild, opts)
+func pingFloodStart(stopChan chan int, opts *PingFloodOpt) error {
+	return packetSend(stopChan, pingFloodBuild, opts)
 }
 
 func pingFloodBuild(opts_ CommonOption) []protocol.Layer {

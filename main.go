@@ -3,6 +3,7 @@ package main
 import (
 	_"fmt"
 	_"flag"
+	"log"
 	"os"
 	"runtime"
 
@@ -62,7 +63,10 @@ func main() {
 	}
 
 	if len(opts.Module) > 0 {
-		modules.LoadModule(nil, opts.Module, args)
+		err := modules.LoadModule(nil, opts.Module, args)
+		if err != nil {
+			log.Println(err)
+		}
 		os.Exit(0)
 	}
 

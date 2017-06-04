@@ -2,8 +2,9 @@ package module
 
 import (
 	"os"
-	"log"
+	_ "log"
 	"strings"
+	"errors"
 	_"syscall"
 	"math/rand"
 
@@ -26,25 +27,31 @@ func (s SynFloodOpt) IsBroadcast() bool {
 	return false
 }
 
-func synFloodEntry(stopChan chan int, remainFlags []string) {
+func synFloodEntry(stopChan chan int, remainFlags []string) error {
 	var opts SynFloodOpt
 
 	opts.ports = []uint16{}
+	var err2 error
 	opts.PortFunc = func(portStr string) {
 		var st, en uint16
 		sepCount := strings.Count(portStr, ":")
 		if sepCount == 1 {
 			ports := strings.Split(portStr, ":")
-			st = parsePortOrDie(ports[0])
-			en = parsePortOrDie(ports[1])
+			var err error
+			st, err = parsePort(ports[0])
+			if err != nil { err2 = nil }
+			en, err = parsePort(ports[1])
+			if err != nil { err2 = nil }
 			if st > en {
-				log.Fatal("start port number must be smaller than end port number")
+				err2 = errors.New("start port number must be smaller than end port number")
+				return
 			}
 		} else if sepCount == 0 {
 			st = parsePortOrDie(portStr)
 			en = st
 		} else {
-			log.Fatal("wrong port format")
+			err2 = errors.New("wrong port format")
+			return
 		}
 		for i := st; i <= en; i++ {
 			opts.ports = append(opts.ports, i)
@@ -61,13 +68,16 @@ func synFloodEntry(stopChan chan int, remainFlags []string) {
 	}
 
 	opts.RateFunc = func(rate string) {
-		commonRateFunc(&opts, rate)
+		e := commonRateFunc(&opts, rate)
+		if e != nil { err2 = e }
 	}
 	opts.DestFunc = func(dest string) {
-		commonDestFunc(&opts, dest)
+		e := commonDestFunc(&opts, dest)
+		if e != nil { err2 = e }
 	}
 	opts.CountFunc = func(count int) {
-		commonCountFunc(&opts, count)
+		e := commonCountFunc(&opts, count)
+		if e != nil { err2 = e }
 	}
 
 	//fmt.Println(remainFlags)
@@ -75,7 +85,7 @@ func synFloodEntry(stopChan chan int, remainFlags []string) {
 
 	_, err := cmd.ParseArgs(remainFlags)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if len(remainFlags) == 0 {
@@ -84,9 +94,11 @@ func synFloodEntry(stopChan chan int, remainFlags []string) {
 	for _, flag := range remainFlags {
 		if flag == "help" {
 			cmd.WriteHelp(os.Stderr)
-			return
+			return nil
 		}
 	}
+
+	if err2 != nil { return err2 }
 
 	if len(opts.ports) == 0 {
 		opts.ports = make([]uint16, 65535, 65535)
@@ -95,10 +107,10 @@ func synFloodEntry(stopChan chan int, remainFlags []string) {
 		}
 	}
 	if opts.dest == nil {
-		log.Fatal("no destination IP specified")
+		return errors.New("no destination IP specified")
 	}
 
-	packetSend(stopChan, synFloodBuild, &opts)
+	return packetSend(stopChan, synFloodBuild, &opts)
 }
 
 func synFloodBuild(opts_ CommonOption) []protocol.Layer {

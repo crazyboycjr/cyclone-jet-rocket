@@ -2,10 +2,11 @@ package module
 
 import (
 	"os"
-	"log"
+	_"log"
 	_"net"
 	_"time"
 	"strings"
+	"errors"
 	_"strconv"
 	"math/rand"
 	_"encoding/binary"
@@ -29,25 +30,31 @@ func (u *UDPFloodOpt) IsBroadcast() bool {
 	return false
 }
 
-func udpFloodEntry(stopChan chan int, remainFlags []string) {
+func udpFloodEntry(stopChan chan int, remainFlags []string) error {
 	var opts UDPFloodOpt
 
 	opts.ports = []uint16{}
+	var err2 error
 	opts.PortFunc = func(portStr string) {
 		var st, en uint16
 		sepCount := strings.Count(portStr, ":")
 		if sepCount == 1 {
 			ports := strings.Split(portStr, ":")
-			st = parsePortOrDie(ports[0])
-			en = parsePortOrDie(ports[1])
+			var err error
+			st, err = parsePort(ports[0])
+			if err != nil { err2 = err }
+			en, err = parsePort(ports[1])
+			if err != nil { err2 = err }
 			if st > en {
-				log.Fatal("start port number must be smaller than end port number")
+				err2 = errors.New("start port number must be smaller than end port number")
+				return
 			}
 		} else if sepCount == 0 {
 			st = parsePortOrDie(portStr)
 			en = st
 		} else {
-			log.Fatal("wrong port format")
+			err2 = errors.New("wrong port format")
+			return
 		}
 		for i := st; i <= en; i++ {
 			opts.ports = append(opts.ports, i)
@@ -64,13 +71,16 @@ func udpFloodEntry(stopChan chan int, remainFlags []string) {
 	}
 
 	opts.RateFunc = func(rate string) {
-		commonRateFunc(&opts, rate)
+		e := commonRateFunc(&opts, rate)
+		if e != nil { err2 = e }
 	}
 	opts.DestFunc = func(dest string) {
-		commonDestFunc(&opts, dest)
+		e := commonDestFunc(&opts, dest)
+		if e != nil { err2 = e }
 	}
 	opts.CountFunc = func(count int) {
-		commonCountFunc(&opts, count)
+		e := commonCountFunc(&opts, count)
+		if e != nil { err2 = e }
 	}
 
 	//fmt.Println(remainFlags)
@@ -78,7 +88,7 @@ func udpFloodEntry(stopChan chan int, remainFlags []string) {
 
 	_, err := cmd.ParseArgs(remainFlags)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if len(remainFlags) == 0 {
@@ -87,9 +97,11 @@ func udpFloodEntry(stopChan chan int, remainFlags []string) {
 	for _, flag := range remainFlags {
 		if flag == "help" {
 			cmd.WriteHelp(os.Stderr)
-			return
+			return nil
 		}
 	}
+
+	if err2 != nil { return err2 }
 
 	if len(opts.ports) == 0 {
 		opts.ports = make([]uint16, 65535, 65535)
@@ -98,14 +110,14 @@ func udpFloodEntry(stopChan chan int, remainFlags []string) {
 		}
 	}
 	if opts.dest == nil {
-		log.Fatal("no destination IP specified")
+		return errors.New("no destination IP specified")
 	}
 
-	udpFloodStart(stopChan, &opts)
+	return udpFloodStart(stopChan, &opts)
 }
 
-func udpFloodStart(stopChan chan int, opts *UDPFloodOpt) {
-	packetSend(stopChan, udpFloodBuild, opts)
+func udpFloodStart(stopChan chan int, opts *UDPFloodOpt) error {
+	return packetSend(stopChan, udpFloodBuild, opts)
 }
 
 var curPort int = 0
