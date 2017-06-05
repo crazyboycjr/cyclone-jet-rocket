@@ -16,7 +16,7 @@ type Layer interface {
 	LayerHeader() []byte
 	LayerPayload() []byte
 	//FromBytes(data []byte) error
-	// not necessary every Layer can ToBytes, but in our project, it it true
+	// not necessary every Layer can ToBytes, but in our project, it is true
 	ToBytes(data *[]byte) error
 }
 
