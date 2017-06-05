@@ -3,6 +3,7 @@ package module
 import (
 	"os"
 	"strings"
+	"strconv"
 	"errors"
 	"math/rand"
 
@@ -19,6 +20,8 @@ type UDPFloodOpt struct {
 	CountFunc func(int) `short:"c" long:"count" description:"stop after sending count packets" value-name:"count" default:"0"`
 	RateFunc func(string) `short:"r" long:"rate" description:"send packets as a specific rate, such as 100/ms, 2/s, 100/min, the default is \"nolimit\"" value-name:"<speed>" default:"nolimit"`
 	TTL uint `short:"t" long:"ttl" description:"set TTL of IP packet" value-name:"ttl" default:"64"`
+	SizeFun func(string) `long:"size" description:"size of UDP payload, range in [0, 1472]" value-name:"pktsize" default:"1200"`
+	size uint
 }
 
 func (u *UDPFloodOpt) IsBroadcast() bool {
@@ -77,6 +80,19 @@ func udpFloodEntry(stopChan chan int, remainFlags []string) error {
 		e := commonCountFunc(&opts, count)
 		if e != nil { err2 = e }
 	}
+	opts.SizeFun = func(pkgsize string) {
+		size, e := strconv.Atoi(pkgsize)
+		if e != nil {
+			err2 = e
+			return
+		}
+		if size < 0 || size > 1472 {
+			err2 = errors.New("pktsize too large or too small")
+			return
+		}
+		opts.size = uint(size)
+	}
+
 
 	//fmt.Println(remainFlags)
 	cmd := flags.NewParser(&opts, flags.HelpFlag | flags.PrintErrors)
@@ -122,7 +138,7 @@ func udpFloodBuild(opts_ CommonOption) []protocol.Layer {
 	srcip := chooseIPv4(opts.Spoof)
 	// TODO fill some content
 	unknownAppData := &protocol.UnknownApplicationLayer {
-		Data: make([]byte, 1200, 1200),
+		Data: make([]byte, opts.size, opts.size),
 	}
 
 	pseudoHeader := make([]byte, 12, 12)

