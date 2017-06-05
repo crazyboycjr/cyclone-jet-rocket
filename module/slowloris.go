@@ -7,13 +7,11 @@ import (
 	"strings"
 	"time"
 	"errors"
-	_"syscall"
 	"math/rand"
 	"net"
 	"net/url"
 	"strconv"
 
-	_"cjr/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -44,19 +42,16 @@ func slowlorisEntry(stopChan chan int, remainFlags []string) error {
 			rawurl = "http://" + rawurl
 		}
 		if rawurl[:7] != "http://" {
-			//log.Fatal("unsupported scheme")
 			err2 = errors.New("unsupported scheme")
 		}
 		u, err := url.Parse(rawurl)
 		if err != nil {
-			//log.Fatal("url parse error: ", err)
 			err2 = fmt.Errorf("url parse error: %s", err.Error())
 		}
 		opts.url = u
 	}
 	opts.PortFunc = func(portStr string) {
 		if len(portStr) > 0 {
-			//opts.port = parsePortOrDie(portStr)
 			var err error
 			opts.port, err = parsePort(portStr)
 			if err != nil { err2 = err }
@@ -68,7 +63,6 @@ func slowlorisEntry(stopChan chan int, remainFlags []string) error {
 	opts.TimeoutFunc = func(timeout string) {
 		i, err := strconv.Atoi(timeout)
 		if err != nil {
-			//log.Fatal("parse timeout error: ", err)
 			err2 = fmt.Errorf("parse timeout error: %s", err.Error())
 		}
 		opts.timeout = uint(i)
@@ -180,23 +174,19 @@ func httpConnect(opts *SlowlorisOpt, fin chan error) {
 	}
 	raddr, err := net.ResolveTCPAddr("tcp", host)
 	if err != nil {
-		//log.Fatal("http host parse error: ", err)
 		fin <- fmt.Errorf("http post parse error: %s", err.Error())
 	}
 	log.Println("raddr = ", raddr)
 	conn, err := net.DialTCP("tcp", nil, raddr)
 	if err != nil {
-		//log.Fatal("DialTCP error: ", err)
 		fin <- fmt.Errorf("DialTCP err: %s", err.Error())
 	}
 	err = conn.SetKeepAlive(true)
 	if err != nil {
-		//log.Fatal("tcp set keep alive failed: ", err)
 		fin <- fmt.Errorf("tcp set keep alive failed: %s", err.Error())
 	}
 	err = conn.SetNoDelay(true)
 	if err != nil {
-		//log.Fatal("tcp conn set no delay: ", err)
 		fin <- fmt.Errorf("tcp open set no delay: %s", err.Error())
 	}
 

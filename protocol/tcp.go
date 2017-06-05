@@ -62,7 +62,7 @@ func (t *TCP) TransportPayload() ApplicationLayer {
 }
 
 func (t *TCP) ToBytes(data *[]byte) error {
-	length := 20 + (len(t.Options) + 3) / 4 * 4 
+	length := 20 + (len(t.Options) + 3) / 4 * 4
 	t.DataOffset = uint8(length / 4)
 	header := make([]byte, length, length)
 	PutUint16 := binary.BigEndian.PutUint16

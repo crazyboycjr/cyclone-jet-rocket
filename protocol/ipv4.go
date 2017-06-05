@@ -40,11 +40,6 @@ type IPv4Packet struct {
 func (p *IPv4Packet) InternetPayload() TransportLayer {
 	return p.Payload
 }
-/*
-func (p *IPv4Packet) FromBytes(data []byte) error {
-	return nil
-}
-*/
 
 func (p *IPv4Packet) LayerType() LayerType {
 	return LayerTypeIPv4

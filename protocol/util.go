@@ -1,9 +1,5 @@
 package protocol
 
-import (
-	_"fmt"
-)
-
 func putUint16(data []byte, u uint16) {
 	data[0], data[1] = uint8(u >> 8), uint8(u & 0xff)
 }

@@ -10,7 +10,7 @@ import (
 	"math/rand"
 
 	"github.com/thoj/go-ircevent"
-	modules "cjr/module"
+	modules "github.com/crazyboycjr/module"
 )
 
 const channel = "#cjr-random"; //TODO change to #cjr-botnet

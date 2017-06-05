@@ -2,16 +2,11 @@ package module
 
 import (
 	"os"
-	_"log"
-	_"net"
-	_"time"
 	"strings"
 	"errors"
-	_"strconv"
 	"math/rand"
-	_"encoding/binary"
 
-	"cjr/protocol"
+	"github.com/crazyboycjr/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 
