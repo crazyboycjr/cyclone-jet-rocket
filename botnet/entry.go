@@ -8,7 +8,6 @@ import (
 
 	"github.com/thoj/go-ircevent"
 	flags "github.com/jessevdk/go-flags"
-	//modules "cjr/module"
 )
 
 var rootOpts struct {

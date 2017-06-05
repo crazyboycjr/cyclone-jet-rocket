@@ -8,8 +8,8 @@ import (
 	"runtime"
 
 	flags "github.com/jessevdk/go-flags"
-	modules "cjr/module"
-	"cjr/botnet"
+	modules "github.com/crazyboygithub.com/crazyboycjr/module"
+	"github.com/crazyboygithub.com/crazyboycjr/botnet"
 )
 
 var (

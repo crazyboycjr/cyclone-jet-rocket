@@ -1,7 +1,6 @@
 package module
 
 import (
-	_"log"
 	"net"
 	"time"
 	"errors"

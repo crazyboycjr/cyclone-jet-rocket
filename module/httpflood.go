@@ -7,13 +7,11 @@ import (
 	"strings"
 	"time"
 	"errors"
-	_"syscall"
 	"math/rand"
 	"net"
 	"net/url"
 	"strconv"
 
-	_"cjr/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 

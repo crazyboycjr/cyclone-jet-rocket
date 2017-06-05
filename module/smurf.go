@@ -2,11 +2,9 @@ package module
 
 import (
 	"os"
-	_"log"
-	_"time"
 	"math/rand"
 
-	"cjr/protocol"
+	"github.com/crazyboycjr/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -50,7 +48,6 @@ func smurfEntry(stopChan chan int, remainFlags []string) error {
 
 	_, err := cmd.ParseArgs(remainFlags)
 	if err != nil {
-		//log.Fatal(err)
 		return err
 	}
 
