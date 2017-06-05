@@ -2,7 +2,7 @@
 
 Cyclone Jet Rocket is a DDoS tool for System Security Technology course.
 
-This DDoS tool provides more than 8 kinds of attack methods, each in one module, with different parameters each module.
+This DDoS tool provides more than 8 kinds of attack methods, each in one module, with different parameters each module. The abstraction of Layers is inspired from [gopacket](https://github.com/google/gopacket), but reimplemented by myself.
 
 ## Install
 
@@ -52,5 +52,6 @@ irssi
 
 ## Dependencies
 
+- Go version 1.8 or above
 - [go-flags](https://github.com/jessevdk/go-flags)
 - [go-ircevent](https://github.com/thoj/go-ircevent)
