@@ -22,6 +22,7 @@ type RDNSOpt struct {
 	DnsFile func(string) `short:"f" long:"file" description:"dns server list file" value-name:"path" default:""`
 	CountFunc func(int) `short:"c" long:"count" description:"stop after sending count packets" value-name:"count" default:"0"`
 	RateFunc func(string) `short:"r" long:"rate" description:"send packets as a specific rate, such as 100/ms, 2/s, 100/min, the default is \"nolimit\"" value-name:"<speed>" default:"nolimit"`
+	Question string `short:"q" long:"question" description:"DNS query" value-name:"host" default:"www.baidu.com"`
 }
 
 func (s RDNSOpt) IsBroadcast() bool {
@@ -137,7 +138,7 @@ func rdnsBuild(opts_ CommonOption) []protocol.Layer {
 		NSCOUNT: 0,
 		ARCOUNT: 0,
 		Question: protocol.DNSQuestion {
-			QNAME: []byte("www.baidu.com"),
+			QNAME: []byte(opts.Question),
 			QTYPE: 0x1, // Type A
 			QCLASS: 0x1, // IN
 		},

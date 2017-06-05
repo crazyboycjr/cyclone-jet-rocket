@@ -113,7 +113,7 @@ func slowlorisStart(stopChan chan int, opts *SlowlorisOpt) error {
 		throttle = time.Tick(opts.Rate())
 	}
 	count := opts.Count()
-	fin := make([]chan error, count)
+	fin := make(chan error, 500) // 500 concurrency num
 
 	for {
 		if curCount >= count {
@@ -130,13 +130,11 @@ func slowlorisStart(stopChan chan int, opts *SlowlorisOpt) error {
 		if throttle != nil {
 			<-throttle
 		}
-		fin[count - 1] = make(chan error)
-		go httpConnect(opts, fin[count - 1])
+		go httpConnect(opts, fin)
 		curCount++
 	}
 
-	for i, _ := range fin {
-		err := <-fin[i]
+	for err := range fin {
 		// This may cause some goroutines not exit?
 		// send a stop command can deal with the issue
 		if err != nil {
