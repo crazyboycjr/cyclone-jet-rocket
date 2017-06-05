@@ -12,7 +12,7 @@ import (
 type LandOpt struct {
 	BaseOption
 	DestFunc func(string) `short:"d" long:"destination" description:"destination address" value-name:"address"`
-	PortFunc func(string) `short:"p" long:"dport" description:"destination port" value-name:"port[:port]"`
+	PortFunc func(string) `short:"p" long:"dport" description:"destination port" value-name:"port"`
 	port uint16
 	CountFunc func(int) `short:"c" long:"count" description:"stop after sending count packets" value-name:"count" default:"0"`
 	RateFunc func(string) `short:"r" long:"rate" description:"send packets as a specific rate, such as 100/ms, 2/s, 100/min, the default is \"nolimit\"" value-name:"<speed>" default:"nolimit"`
