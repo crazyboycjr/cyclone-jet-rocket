@@ -2,6 +2,8 @@ package module
 
 import (
 	"os"
+	"errors"
+	"strconv"
 	"math/rand"
 
 	"github.com/crazyboycjr/cyclone-jet-rocket/protocol"
@@ -15,6 +17,8 @@ type SmurfOpt struct {
 	CountFunc func(int) `short:"c" long:"count" description:"stop after sending count packets" value-name:"count" default:"0"`
 	RateFunc func(string) `short:"r" long:"rate" description:"send packets as a specific rate, such as 100/ms, 2/s, 100/min, the default is \"nolimit\"" value-name:"<speed>" default:"nolimit"`
 	TTL uint `short:"t" long:"ttl" description:"set TTL of IP packet" value-name:"ttl" default:"64"`
+	SizeFun func(string) `long:"size" description:"size of ICMP payload, range in [0, 1472]" value-name:"pktsize" default:"1200"`
+	size uint
 }
 
 func (s *SmurfOpt) IsBroadcast() bool {
@@ -42,6 +46,18 @@ func smurfEntry(stopChan chan int, remainFlags []string) error {
 		if e != nil {
 			err2 = e
 		}
+	}
+	opts.SizeFun = func(pkgsize string) {
+		size, e := strconv.Atoi(pkgsize)
+		if e != nil {
+			err2 = e
+			return
+		}
+		if size < 0 || size > 1472 {
+			err2 = errors.New("pktsize too large or too small")
+			return
+		}
+		opts.size = uint(size)
 	}
 
 	cmd := flags.NewParser(&opts, flags.HelpFlag | flags.PrintErrors)
@@ -72,7 +88,7 @@ func smurfBuild(opts_ CommonOption) []protocol.Layer {
 	opts := opts_.(*SmurfOpt)
 	srcip := chooseIPv4(opts.Spoof)
 
-	da := make([]byte, 1200, 1200)
+	da := make([]byte, opts.size, opts.size)
 	icmp4 := &protocol.ICMPv4 {
 		Type: 8, // ICMP echo
 		Code: 0,
