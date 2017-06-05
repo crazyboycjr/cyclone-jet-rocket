@@ -4,7 +4,7 @@ import (
 	"os"
 	"math/rand"
 
-	"github.com/crazyboycjr/protocol"
+	"github.com/crazyboycjr/cyclone-jet-rocket/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 
