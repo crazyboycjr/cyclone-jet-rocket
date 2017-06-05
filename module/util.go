@@ -12,7 +12,7 @@ import (
 	"encoding/binary"
 	"math/rand"
 
-	"github.com/crazyboycjr/protocol"
+	"github.com/crazyboycjr/cyclone-jet-rocket/protocol"
 )
 
 // The order must be bottom up

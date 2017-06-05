@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	_"log"
 	"encoding/binary"
 	"net"
 )
