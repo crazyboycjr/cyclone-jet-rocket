@@ -1,7 +1,6 @@
 package module
 
 import (
-	_"log"
 	"fmt"
 	"time"
 	"math/rand"

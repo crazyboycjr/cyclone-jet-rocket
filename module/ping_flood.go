@@ -2,11 +2,9 @@ package module
 
 import (
 	"os"
-	_"log"
 	"math/rand"
-	_"encoding/binary"
 
-	"cjr/protocol"
+	"github.com/crazyboycjr/cyclone-jet-rocket/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -51,7 +49,6 @@ func pingFloodEntry(stopChan chan int, remainFlags []string) error {
 
 	_, err := cmd.ParseArgs(remainFlags)
 	if err != nil {
-		//log.Fatal(err)
 		return err
 	}
 

@@ -12,7 +12,7 @@ import (
 	"encoding/binary"
 	"math/rand"
 
-	"cjr/protocol"
+	"github.com/crazyboycjr/cyclone-jet-rocket/protocol"
 )
 
 // The order must be bottom up
@@ -22,7 +22,7 @@ func send(fd int, l ...protocol.Layer) error {
 	if err != nil {
 		return err
 	}
-	//
+
 	layerType := l[0].LayerType()
 	if layerType == protocol.LayerTypeIPv4 {
 		ip := l[0].(*protocol.IPv4Packet)
@@ -43,7 +43,8 @@ func send(fd int, l ...protocol.Layer) error {
 				log.Fatal("Sendto: ", err, " ", addr)
 			}
 		}
-	} /*else if layerType == protocol.LayerTypeIPv6 {
+	}
+	/*else if layerType == protocol.LayerTypeIPv6 {
 		ip := l[0].(protocol.IPv6Packet)
 		fd, err := syscall.Socket(syscall.AF_INET6, syscall.SOCK_RAW, syscall.IPPROTO_RAW)
 		addr := &syscall.SockaddrInet6 {
@@ -241,7 +242,6 @@ func packetSend(stopChan chan int, constructPacket func(CommonOption) []protocol
 		if err != nil {
 			// should I log.Fatal() here?
 			// or bubble the error?
-			//log.Fatal("packet send:", err)
 			return fmt.Errorf("packet send: %s", err.Error())
 		}
 		curCount++

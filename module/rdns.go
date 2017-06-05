@@ -9,7 +9,7 @@ import (
 	"bufio"
 	"math/rand"
 
-	"cjr/protocol"
+	"github.com/crazyboycjr/cyclone-jet-rocket/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -22,7 +22,6 @@ type RDNSOpt struct {
 	DnsFile func(string) `short:"f" long:"file" description:"dns server list file" value-name:"path" default:""`
 	CountFunc func(int) `short:"c" long:"count" description:"stop after sending count packets" value-name:"count" default:"0"`
 	RateFunc func(string) `short:"r" long:"rate" description:"send packets as a specific rate, such as 100/ms, 2/s, 100/min, the default is \"nolimit\"" value-name:"<speed>" default:"nolimit"`
-	//TTL uint `short:"t" long:"ttl" description:"set TTL of IP packet" value-name:"ttl" default:"64"`
 }
 
 func (s RDNSOpt) IsBroadcast() bool {

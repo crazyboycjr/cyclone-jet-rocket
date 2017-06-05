@@ -2,13 +2,11 @@ package module
 
 import (
 	"os"
-	_ "log"
 	"strings"
 	"errors"
-	_"syscall"
 	"math/rand"
 
-	"cjr/protocol"
+	"github.com/crazyboycjr/cyclone-jet-rocket/protocol"
 	flags "github.com/jessevdk/go-flags"
 )
 
